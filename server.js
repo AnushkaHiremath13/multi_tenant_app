@@ -30,14 +30,29 @@ app.use(
 );
 
 /* ================= DATABASE CONNECTION ================= */
+const mysql = require("mysql2");
+
+/* DB CONFIG */
 const db = mysql.createPool({
-  host: process.env.DB_HOST || "localhost",
-  user: process.env.DB_USER || "root",
-  password: process.env.DB_PASSWORD || "Anushka@13",
-  database: process.env.DB_NAME || "multi_tenant_db",
-  port: process.env.DB_PORT || 3306,
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT,
   waitForConnections: true,
-  connectionLimit: 10
+  connectionLimit: 10,
+  ssl: false
+});
+
+/* DB TEST */
+db.getConnection((err, connection) => {
+  if (err) {
+    console.error("❌ DATABASE CONNECTION FAILED");
+    console.error(err);
+  } else {
+    console.log("✅ DATABASE CONNECTED SUCCESSFULLY");
+    connection.release();
+  }
 });
 
 /* ================= ROUTES ================= */
