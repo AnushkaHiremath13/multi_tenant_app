@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #1d2671, #c33764);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .dashboard {
+      background: white;
+      padding: 30px;
+      width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .info {
+      background: #f4f4f4;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    .info p {
+      margin: 8px 0;
+      color: #444;
+    }
+
+    button {
+      background: #c33764;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #a52d54;
+    }
+  </style>
+</head>
+<body>
+
+<div class="dashboard">
+  <h2>Welcome to Dashboard</h2>
+
+  <div class="info">
+    <p><strong>Email:</strong> <span id="email">Loading...</span></p>
+    <p><strong>Mobile:</strong> <span id="mobile">Loading...</span></p>
+  </div>
+
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+  fetch("/dashboard-data")
+    .then(res => res.json())
+    .then(data => {
+      document.getElementById("email").innerText = data.email;
+      document.getElementById("mobile").innerText = data.mobile;
+    })
+    .catch(() => {
+      alert("Session expired. Please login again.");
+      window.location.href = "/login.html";
+    });
+
+  function logout() {
+    window.location.href = "/logout";
+  }
+</script>
+
+</body>
+</html>
