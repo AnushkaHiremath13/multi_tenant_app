@@ -1,13 +1,32 @@
+/* ================= IMPORTS ================= */
 const express = require("express");
 const mysql = require("mysql2");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
+const cors = require("cors");
 
+/* ================= EXPRESS APP ================= */
 const app = express();
 
-/* ================= DATABASE CONNECTION (POOL) ================= */
+/* ================= MIDDLEWARE ================= */
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static("public"));
 
+// If your frontend is hosted separately, set origin accordingly
+app.use(cors({ origin: "*", credentials: true }));
+
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "multi-tenant-secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 15 * 60 * 1000 } // 15 minutes
+  })
+);
+
+/* ================= DATABASE CONNECTION (POOL) ================= */
 const db = mysql.createPool({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
@@ -17,26 +36,19 @@ const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: process.env.DB_HOST ? { rejectUnauthorized: true } : false
+  ssl:
+    process.env.DB_HOST && process.env.DB_SSL === "true"
+      ? { rejectUnauthorized: true }
+      : false
 });
 
-/* ================= MIDDLEWARE ================= */
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static("public"));
-
-app.use(
-  session({
-    secret: "multi-tenant-secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { maxAge: 15 * 60 * 1000 } // 15 minutes
-  })
-);
+// Verify DB connection
+db.query("SELECT DATABASE() AS dbName", (err, results) => {
+  if (err) console.error("DB CONNECTION ERROR:", err);
+  else console.log("Connected to DB:", results[0].dbName);
+});
 
 /* ================= CREATE TABLE ================= */
-
 const createUserTable = `
 CREATE TABLE IF NOT EXISTS users (
   id VARCHAR(36) PRIMARY KEY,
@@ -51,68 +63,57 @@ db.query(createUserTable, (err) => {
   else console.log("Users table ready");
 });
 
-/* ================= HOME ROUTE ================= */
+/* ================= ROUTES ================= */
 
-app.get("/", (req, res) => {
-  res.redirect("/login.html");
-});
+// Home redirect
+app.get("/", (req, res) => res.redirect("/login.html"));
 
-/* ================= LOGIN PAGE ================= */
-
-app.get("/login", (req, res) => {
-  res.redirect("/login.html");
-});
-
-/* ================= REGISTER ================= */
-
+// REGISTER
 app.post("/register", async (req, res) => {
-  const { email, mobile, password } = req.body;
+  const email = req.body.email?.trim();
+  const mobile = req.body.mobile?.trim();
+  const password = req.body.password;
 
-  if (!email || !mobile || !password) {
-    return res.send("All fields are required");
-  }
+  if (!email || !mobile || !password) return res.send("All fields are required");
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = uuidv4();
 
-    const sql =
-      "INSERT INTO users (id, email, mobile, password) VALUES (?, ?, ?, ?)";
-
+    const sql = "INSERT INTO users (id, email, mobile, password) VALUES (?, ?, ?, ?)";
     db.query(sql, [userId, email, mobile, hashedPassword], (err) => {
       if (err) {
         console.error("REGISTER ERROR:", err);
-        if (err.code === "ER_DUP_ENTRY") {
-          return res.send("Email or Mobile already exists");
-        }
+        if (err.code === "ER_DUP_ENTRY") return res.send("Email or Mobile already exists");
         return res.send("Registration failed");
       }
-      res.redirect("/login.html");
+      return res.redirect("/login.html");
     });
   } catch (err) {
-    console.error(err);
+    console.error("HASH ERROR:", err);
     res.send("Something went wrong");
   }
 });
 
-/* ================= LOGIN ================= */
-
+// LOGIN
 app.post("/login", (req, res) => {
-  const { email, password } = req.body;
+  const email = req.body.email?.trim();
+  const password = req.body.password;
+
+  if (!email || !password) return res.send("All fields are required");
 
   const sql = "SELECT * FROM users WHERE email = ?";
-
   db.query(sql, [email], async (err, results) => {
-    if (err || results.length === 0) {
-      return res.send("User not found");
+    if (err) {
+      console.error("LOGIN QUERY ERROR:", err);
+      return res.send("Login failed due to DB error");
     }
+
+    if (results.length === 0) return res.send("User not found");
 
     const user = results[0];
     const match = await bcrypt.compare(password, user.password);
-
-    if (!match) {
-      return res.send("Invalid password");
-    }
+    if (!match) return res.send("Invalid password");
 
     req.session.userId = user.id;
     req.session.email = user.email;
@@ -122,30 +123,20 @@ app.post("/login", (req, res) => {
   });
 });
 
-/* ================= DASHBOARD DATA ================= */
-
+// DASHBOARD DATA
 app.get("/dashboard-data", (req, res) => {
-  if (!req.session.userId) {
-    return res.status(401).json({ error: "Unauthorized" });
-  }
-
+  if (!req.session.userId) return res.status(401).json({ error: "Unauthorized" });
   res.json({
     email: req.session.email,
     mobile: req.session.mobile
   });
 });
 
-/* ================= LOGOUT ================= */
-
+// LOGOUT
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
-    res.redirect("/login.html");
-  });
+  req.session.destroy(() => res.redirect("/login.html"));
 });
 
 /* ================= START SERVER ================= */
-
 const PORT = process.env.PORT || 2000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
