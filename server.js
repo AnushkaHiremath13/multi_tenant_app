@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
 const cors = require("cors");
 const path = require("path");
-const { Pool } = require("pg"); // 1. Use pg instead of mysql2
+const { Pool } = require("pg");
 
 /* ================= EXPRESS APP ================= */
 const app = express();
@@ -24,19 +24,18 @@ app.use(
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === "production", // Secure in production
+        secure: process.env.NODE_ENV === "production", 
         maxAge: 24 * 60 * 60 * 1000 
     } 
   })
 );
 
 /* ================= DATABASE CONNECTION (POSTGRES) ================= */
-// 2. PostgreSQL Configuration
 const pool = new Pool({
-  host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'postgres',
-  password: String(process.env.DB_PASSWORD || ''), // Forces it to be a string even if empty
-  database: process.env.DB_NAME || 'multi_tenant_db',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: String(process.env.DB_PASSWORD || ''),
+  database: process.env.DB_NAME,
   port: process.env.DB_PORT || 5432,
   ssl: process.env.DB_SSL === "true" ? { rejectUnauthorized: false } : false
 });
@@ -50,7 +49,6 @@ pool.connect((err, client, release) => {
     release();
   }
 });
-
 
 /* ================= ROUTES ================= */
 
@@ -67,14 +65,13 @@ app.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const userId = uuidv4();
 
-    // 3. Postgres uses $1, $2 syntax instead of ?
     const sql = "INSERT INTO users (id, email, mobile, password) VALUES ($1, $2, $3, $4)";
     await pool.query(sql, [userId, email.trim(), mobile.trim(), hashedPassword]);
     
     res.redirect("/login.html");
   } catch (err) {
     console.error(err);
-    if (err.code === "23505") return res.status(409).send("User already exists"); // Postgres Unique Violation code
+    if (err.code === "23505") return res.status(409).send("User already exists");
     res.status(500).send("Internal server error");
   }
 });
@@ -95,9 +92,12 @@ app.post("/login", async (req, res) => {
     
     if (!match) return res.status(401).send("Invalid email or password");
 
-    req.session.userId = user.id;
-    req.session.email = user.email;
-    req.session.mobile = user.mobile;
+    // FIX: Group data into a 'user' object in session
+    req.session.user = {
+        id: user.id,
+        email: user.email,
+        mobile: user.mobile
+    };
 
     req.session.save((err) => {
       if (err) return res.status(500).send("Session error");
@@ -108,13 +108,24 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// DASHBOARD DATA ROUTE
 app.get("/dashboard-data", (req, res) => {
-  if (!req.session.userId) return res.status(401).json({ error: "Not logged in" });
-  res.json({ email: req.session.email, mobile: req.session.mobile });
+  // FIX: Check for req.session.user specifically
+  if (!req.session.user) {
+      return res.status(401).json({ error: "Not logged in" });
+  }
+  
+  // Return the data exactly as dashboard.html expects it
+  res.json({ 
+      email: req.session.user.email, 
+      mobile: req.session.user.mobile 
+  });
 });
 
+// LOGOUT ROUTE
 app.get("/logout", (req, res) => {
-  req.session.destroy(() => {
+  req.session.destroy((err) => {
+    if (err) console.log("Logout error:", err);
     res.clearCookie('connect.sid');
     res.redirect("/login.html");
   });
