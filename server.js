@@ -6,21 +6,18 @@ const { v4: uuidv4 } = require("uuid");
 
 const app = express();
 
-/* ================= DATABASE CONNECTION ================= */
+/* ================= DATABASE CONNECTION (POOL) ================= */
 
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "Anushka@13",
-  database: "multi_tenant_db"
-});
-
-db.connect((err) => {
-  if (err) {
-    console.error("MySQL connection failed:", err);
-    return;
-  }
-  console.log("Connected to MySQL Database");
+const db = mysql.createPool({
+  host: process.env.DB_HOST || "localhost",
+  user: process.env.DB_USER || "root",
+  password: process.env.DB_PASSWORD || "Anushka@13",
+  database: process.env.DB_NAME || "multi_tenant_db",
+  port: process.env.DB_PORT || 3306,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  ssl: process.env.DB_HOST ? { rejectUnauthorized: true } : false
 });
 
 /* ================= MIDDLEWARE ================= */
@@ -42,7 +39,7 @@ app.use(
 
 const createUserTable = `
 CREATE TABLE IF NOT EXISTS users (
-  id VARCHAR(36) PRIMARY KEY unique,
+  id VARCHAR(36) PRIMARY KEY,
   email VARCHAR(100) UNIQUE NOT NULL,
   mobile VARCHAR(15) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL
@@ -50,7 +47,7 @@ CREATE TABLE IF NOT EXISTS users (
 `;
 
 db.query(createUserTable, (err) => {
-  if (err) console.error(err);
+  if (err) console.error("TABLE ERROR:", err);
   else console.log("Users table ready");
 });
 
@@ -60,12 +57,11 @@ app.get("/", (req, res) => {
   res.redirect("/login.html");
 });
 
-/* ================= LOGIN PAGE REDIRECT ================= */
+/* ================= LOGIN PAGE ================= */
 
 app.get("/login", (req, res) => {
   res.redirect("/login.html");
 });
-
 
 /* ================= REGISTER ================= */
 
@@ -76,19 +72,27 @@ app.post("/register", async (req, res) => {
     return res.send("All fields are required");
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const userId = uuidv4();
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = uuidv4();
 
-  const sql =
-    "INSERT INTO users (id, email, mobile, password) VALUES (?, ?, ?, ?)";
+    const sql =
+      "INSERT INTO users (id, email, mobile, password) VALUES (?, ?, ?, ?)";
 
- db.query(sql, [userId, email, mobile, hashedPassword], (err) => {
-  if (err) {
-    console.error("REGISTER ERROR:", err);
-    return res.send(err.message);
+    db.query(sql, [userId, email, mobile, hashedPassword], (err) => {
+      if (err) {
+        console.error("REGISTER ERROR:", err);
+        if (err.code === "ER_DUP_ENTRY") {
+          return res.send("Email or Mobile already exists");
+        }
+        return res.send("Registration failed");
+      }
+      res.redirect("/login.html");
+    });
+  } catch (err) {
+    console.error(err);
+    res.send("Something went wrong");
   }
-  res.redirect("/login.html");
-});
 });
 
 /* ================= LOGIN ================= */
@@ -118,7 +122,7 @@ app.post("/login", (req, res) => {
   });
 });
 
-/* ================= DASHBOARD DATA (FOR dashboard.html) ================= */
+/* ================= DASHBOARD DATA ================= */
 
 app.get("/dashboard-data", (req, res) => {
   if (!req.session.userId) {
@@ -141,6 +145,7 @@ app.get("/logout", (req, res) => {
 
 /* ================= START SERVER ================= */
 
-app.listen(2000, () => {
-  console.log("Server running at http://localhost:2000");
+const PORT = process.env.PORT || 2000;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
