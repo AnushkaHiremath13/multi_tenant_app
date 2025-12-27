@@ -1,6 +1,5 @@
 /* ================= IMPORTS ================= */
 const express = require("express");
-const mysql = require("mysql2");
 const session = require("express-session");
 const bcrypt = require("bcrypt");
 const { v4: uuidv4 } = require("uuid");
