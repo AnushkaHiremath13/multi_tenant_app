@@ -4,62 +4,105 @@
   <meta charset="UTF-8">
   <title>Register</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+    * {
+    box-sizing: border-box;
+  }
 
-    .container {
-      background: #fff;
-      padding: 30px;
-      width: 350px;
-      border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    /* Removed all colors and gradients */
+    background: #ffffff; 
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-    }
+  .container {
+    /* Transparent background with a clean border */
+    background: transparent;
+    padding: 40px;
+    width: 380px;
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    /* Reduced shadow for a flatter look */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+  }
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #1e293b;
+    font-size: 28px;
+    font-weight: 700;
+  }
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #667eea;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 10px;
-    }
+  input {
+    width: 100%;
+    padding: 14px 16px;
+    margin: 10px 0;
+    /* Transparent inputs */
+    background: transparent;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    color: #1e293b;
+    font-size: 15px;
+    transition: all 0.2s ease;
+  }
 
-    button:hover {
-      background: #5a67d8;
-    }
+  input::placeholder {
+    color: #94a3b8;
+  }
 
-    .link {
-      text-align: center;
-      margin-top: 15px;
-    }
+  input:focus {
+    outline: none;
+    /* Only the border changes color on focus */
+    border-color: #1e293b;
+    background: transparent;
+    box-shadow: none;
+  }
 
-    .link a {
-      color: #667eea;
-      text-decoration: none;
-    }
+  button {
+    width: 100%;
+    padding: 14px;
+    /* Solid black/dark button for high contrast */
+    background: #1e293b;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: all 0.2s ease;
+  }
+
+  button:hover {
+    background: #000000;
+    transform: translateY(-1px);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
+
+  .link {
+    text-align: center;
+    margin-top: 20px;
+  }
+
+  .link a {
+    color: #64748b;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.2s;
+  }
+
+  .link a:hover {
+    color: #1e293b;
+    text-decoration: underline;
+  }
   </style>
 </head>
 <body>

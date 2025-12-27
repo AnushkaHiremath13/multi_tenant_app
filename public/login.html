@@ -4,62 +4,94 @@
   <meta charset="UTF-8">
   <title>Login</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #43cea2, #185a9d);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+   * {
+    box-sizing: border-box;
+  }
 
-    .container {
-      background: #fff;
-      padding: 30px;
-      width: 350px;
-      border-radius: 8px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    /* Removed gradient, using a clean off-white/light-grey */
+    background-color: #fcfcfc; 
+    height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-      color: #333;
-    }
+  .container {
+    background: #ffffff;
+    padding: 40px;
+    width: 380px;
+    border-radius: 12px;
+    /* Subtle border instead of heavy shadow */
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  }
 
-    input {
-      width: 100%;
-      padding: 10px;
-      margin: 8px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
+  h2 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #1a202c;
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
 
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #185a9d;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-      margin-top: 10px;
-    }
+  input {
+    width: 100%;
+    padding: 12px 16px;
+    margin: 10px 0;
+    background: transparent;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    color: #2d3748;
+    font-size: 15px;
+    transition: all 0.2s ease;
+  }
 
-    button:hover {
-      background: #134e86;
-    }
+  input:focus {
+    outline: none;
+    border-color: #2d3748; /* Darker border on focus instead of color */
+    background: #fff;
+  }
 
-    .link {
-      text-align: center;
-      margin-top: 15px;
-    }
+  button {
+    width: 100%;
+    padding: 12px;
+    /* Solid dark color for high contrast without "rainbow" gradients */
+    background: #1a202c;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    margin-top: 20px;
+    transition: opacity 0.2s ease;
+  }
 
-    .link a {
-      color: #185a9d;
-      text-decoration: none;
-    }
+  button:hover {
+    opacity: 0.9;
+  }
+
+  .link {
+    text-align: center;
+    margin-top: 25px;
+  }
+
+  .link a {
+    color: #718096;
+    text-decoration: none;
+    font-size: 14px;
+    border-bottom: 1px solid transparent;
+    transition: all 0.2s;
+  }
+
+  .link a:hover {
+    color: #1a202c;
+    border-bottom: 1px solid #1a202c;
+  }
   </style>
 </head>
 <body>

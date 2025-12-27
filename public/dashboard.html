@@ -5,56 +5,82 @@
   <title>Dashboard</title>
 
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #1d2671, #c33764);
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+   body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    /* Completely removed the gradient for a clean, neutral grey */
+    background-color: #f8fafc; 
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #1e293b;
+  }
 
-    .dashboard {
-      background: white;
-      padding: 30px;
-      width: 400px;
-      border-radius: 10px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      text-align: center;
-    }
+  .dashboard {
+    background: #ffffff;
+    padding: 40px;
+    width: 420px;
+    border-radius: 16px;
+    /* Uses a very soft shadow and thin border instead of heavy colors */
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
+    text-align: center;
+  }
 
-    h2 {
-      margin-bottom: 20px;
-      color: #333;
-    }
+  h2 {
+    margin-bottom: 24px;
+    color: #0f172a;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
 
-    .info {
-      background: #f4f4f4;
-      padding: 15px;
-      border-radius: 6px;
-      margin-bottom: 20px;
-      text-align: left;
-    }
+  .info {
+    /* Subtle background and dashed border for a "card within a card" feel */
+    background: #ffffff;
+    padding: 20px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    text-align: left;
+  }
 
-    .info p {
-      margin: 8px 0;
-      color: #444;
-    }
+  .info p {
+    margin: 12px 0;
+    color: #475569;
+    font-size: 15px;
+    line-height: 1.5;
+  }
 
-    button {
-      background: #c33764;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
+  /* Example of how to bold the labels inside your <p> tags */
+  .info p strong {
+    color: #1e293b;
+    font-weight: 600;
+  }
 
-    button:hover {
-      background: #a52d54;
-    }
+  button {
+    width: 100%; /* Full width button for a modern look */
+    background: #0f172a; /* Sophisticated dark slate instead of pink */
+    color: #ffffff;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  button:hover {
+    background: #334155;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  button:active {
+    transform: translateY(0);
+  }
   </style>
 </head>
 <body>
