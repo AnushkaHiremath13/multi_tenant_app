@@ -12,19 +12,26 @@ const { Pool } = require("pg");
 const app = express();
 
 /* ================= MIDDLEWARE ================= */
+/* ================= MIDDLEWARE ================= */
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static("public"));
 
-app.use(cors({ origin: "*", credentials: true }));
+// Allow credentials for CORS so cookies can be passed
+app.use(cors({ origin: true, credentials: true }));
+
+// 1. TRUST RENDER'S PROXY (Crucial for HTTPS cookies)
+app.set('trust proxy', 1); 
 
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "multi-tenant-secret",
-    resave: false,
-    saveUninitialized: false,
+    resave: true,                // Ensures session is saved back to the store
+    saveUninitialized: false,   // Don't create sessions for unauthenticated users
+    proxy: true,                // Required for cookies to work behind Render's load balancer
     cookie: { 
-        secure: process.env.NODE_ENV === "production", 
+        secure: true,           // Must be true for Render's HTTPS
+        sameSite: 'none',       // Allows the cookie to be sent with your fetch() request
         maxAge: 24 * 60 * 60 * 1000 
     } 
   })
